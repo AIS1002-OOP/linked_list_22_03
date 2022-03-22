@@ -2,6 +2,7 @@
 #ifndef SINGLY_LINKED_LIST_LINKED_LIST_HPP
 #define SINGLY_LINKED_LIST_LINKED_LIST_HPP
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -12,6 +13,13 @@ namespace ais1002 {
     class linked_list {
 
     public:
+        
+        linked_list(): size_(0) {}
+        
+        // disable copy and move for this type
+        linked_list(const linked_list<T>&) = delete;
+        linked_list(const linked_list<T>&&) = delete;
+        
         [[nodiscard]] size_t size() const {
             return size_;
         }
@@ -21,7 +29,7 @@ namespace ais1002 {
                 throw std::runtime_error("Index too large: " + std::to_string(index));
             }
 
-            node<T> *current = head_;
+            std::shared_ptr<node<T>> current = head_;
             for (int i = 0; i < index; i++) {
                 current = current->next;
             }
@@ -34,8 +42,8 @@ namespace ais1002 {
                 throw std::runtime_error("Index too large: " + std::to_string(index));
             }
 
-            node<T> *current = head_;
-            node<T> *prev = nullptr;
+            std::shared_ptr<node<T>> current = head_;
+            std::shared_ptr<node<T>> prev = nullptr;
 
             for (int i = 0; i < index; i++) {
                 prev = current;
@@ -51,7 +59,6 @@ namespace ais1002 {
             size_--;
 
             T data = std::move(current->value);
-            delete (current);
 
             return data;
         }
@@ -60,7 +67,7 @@ namespace ais1002 {
             std::vector<T> v;
             v.reserve(size_);
 
-            node<T> *current = head_;
+            std::shared_ptr<node<T>> current = head_;
             while (current != nullptr) {
                 v.push_back(current->value);
                 current = current->next;
@@ -82,15 +89,15 @@ namespace ais1002 {
                 throw std::runtime_error("Index too large: " + std::to_string(index));
             }
 
-            node<T> *current = head_;
-            node<T> *prev = nullptr;
+            std::shared_ptr<node<T>> current = head_;
+            std::shared_ptr<node<T>> prev = nullptr;
 
             for (int i = 0; i < index; i++) {
                 prev = current;
                 current = current->next;
             }
 
-            node<T> *insert = new node(value);
+            std::shared_ptr<node<T>> insert = std::make_shared<node<T>>(value);
             insert->next = current;
             if (!prev) {
                 head_ = insert;
@@ -101,21 +108,15 @@ namespace ais1002 {
             size_++;
         }
 
-        ~linked_list() {
-            for (int i = size_ - 1; i >= 0; i--) {
-                remove(i);
-            }
-        }
-
         friend std::ostream &operator<<(std::ostream &os, const linked_list<T> &v) {
             os << "[";
-            node<T> *current = v.head_;
+            node<T>* current = v.head_.get();
             while (current != nullptr) {
                 os << current->value;
                 if (current->next) {
                     os << " ,";
                 }
-                current = current->next;
+                current = current->next.get();
             }
             os << "]";
             return os;
@@ -126,13 +127,13 @@ namespace ais1002 {
         struct node {
 
             T value;
-            node<T> *next;
+            std::shared_ptr<node<T>> next;
 
             explicit node(const T &value) : value(value) {}
         };
 
-        size_t size_ = 0;
-        node<T> *head_ = nullptr;
+        size_t size_;
+        std::shared_ptr<node<T>> head_ = nullptr;
     };
 
 
