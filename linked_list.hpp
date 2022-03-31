@@ -2,6 +2,7 @@
 #ifndef SINGLY_LINKED_LIST_LINKED_LIST_HPP
 #define SINGLY_LINKED_LIST_LINKED_LIST_HPP
 
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -126,7 +127,7 @@ namespace ais1002 {
         struct node {
 
             T value;
-            node<T> *next;
+            node<T> *next = nullptr;
 
             explicit node(const T &value) : value(value) {}
         };
